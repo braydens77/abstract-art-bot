@@ -38,36 +38,59 @@ def draw_rand_line():
 	canvas.create_line(x0, x1, y0, y1, fill=color, width=width)
 
 def get_rand_color():
-	# Generate a random 8 bit color hex string based on hour of day
-	'''
-	morning = 6-9 (4)	dark colors
-	day 	= 10-17 (8)	normal colors
+	''' Generate a random 8 bit color hex string based on hour of day
+	
+	Color phases:
+	morning = 6-9 	(4)	dark colors
+	day 	= 10-11 (2)	all colors
+	noon	= 12-13 (2)	light colors
+	day 	= 14-17 (4) all colors
 	evening = 18-21 (4)	dark colors
-	night 	= 22-5 (8)	b & w
+	night 	= 22-5 	(8)	b & w
 	'''
 	hour = int(cur_hour)
 	if((hour >= 6  and hour <= 9) or (hour >=18 and hour <= 21)):
 		return get_rand_color_dark()
+	if(hour >= 12 and hour <= 13):
+		return get_rand_color_light()
 	if(hour >= 22 or hour <= 5):
 		return get_rand_color_bw()
+	return get_rand_color_all()
+
+def get_rand_color_all():
+	# Generate a random 8 bit color hex string of any value
 	hex_str = '#'	
 	for i in range(HEX_LEN):
 		digit = get_hex_digit(rand.randrange(HEX_MAX + 1))
 		hex_str += str(digit)
 	return hex_str
 
-def get_rand_color_dark():
-	# Generate a random 8 bit color hex string
+def get_rand_color_light():
+	# Generate a random 8 bit color hex string for lighter values
+	# Min value of #808080 == rgb(128, 128, 128)
 	hex_str = '#'
 	for i in range(HEX_LEN):
 		if(i == 0 or i % 2 == 0):
-			hex_str += str(rand.randrange(8))
+			digit = get_hex_digit(rand.randrange(8, 16))
 		else:
 			digit = get_hex_digit(rand.randrange(HEX_MAX + 1))
-			hex_str += str(digit)
+		hex_str += str(digit)
+	return hex_str
+
+def get_rand_color_dark():
+	# Generate a random 8 bit color hex string for darker values
+	# Max value of #7f7f7f == rgb(127, 127, 127)
+	hex_str = '#'
+	for i in range(HEX_LEN):
+		if(i == 0 or i % 2 == 0):
+			digit = rand.randrange(8)
+		else:
+			digit = get_hex_digit(rand.randrange(HEX_MAX + 1))
+		hex_str += str(digit)
 	return hex_str
 
 def get_rand_color_bw():
+	# Generate random 8 bit grayscale color hex string
 	hex_str = '#'
 	value1 = get_hex_digit(rand.randrange(HEX_MAX + 1))
 	value2 = get_hex_digit(rand.randrange(HEX_MAX + 1))
@@ -77,10 +100,8 @@ def get_rand_color_bw():
 	return hex_str
 
 def get_hex_digit(num):
-	if(num < 0):
-		return 0
-	if(num > 15):
-		return 15
+	if(num < 0 or num > 15):
+		raise ValueError("Not a valid number to convert")
 	if(num < 10):
 		return num
 	return {
@@ -128,6 +149,7 @@ def fill_canvas():
 		else:
 			draw_rand_polygon()
 
+
 class ScreenshotThread(Thread):
 	def __init__(self):
 		Thread.__init__(self)
@@ -142,6 +164,7 @@ class ScreenshotThread(Thread):
 		img.save(image_file_name)
 		sleep(5)
 		root.destroy()
+
 
 cur_hour = datetime.now().strftime('%H')
 image_file_name = 'art.jpg'
@@ -161,7 +184,9 @@ scrn.start()
 mainloop()
 
 print('Updating Twitter status with image')
+'''
 twtr = Twython(CONSUMER_KEY,CONSUMER_SECRET,ACCESS_TOKEN,ACCESS_TOKEN_SECRET) 
 img_bytes = open(image_file_name, 'rb')
 response = twtr.upload_media(media=img_bytes)
 twtr.update_status(media_ids=[response['media_id']])
+'''
