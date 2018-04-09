@@ -184,9 +184,7 @@ scrn.start()
 mainloop()
 
 print('Updating Twitter status with image')
-'''
 twtr = Twython(CONSUMER_KEY,CONSUMER_SECRET,ACCESS_TOKEN,ACCESS_TOKEN_SECRET) 
 img_bytes = open(image_file_name, 'rb')
 response = twtr.upload_media(media=img_bytes)
 twtr.update_status(media_ids=[response['media_id']])
-'''
